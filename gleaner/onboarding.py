@@ -169,14 +169,22 @@ def setup_body(report: SetupReport) -> str:
 
 def sync_setup_issue(github: GitHubClient, report: SetupReport) -> IssueRef | None:
     """Update/reopen the same marked Issue; close it when all findings are fixed."""
-    existing = next(
+    # GitHub's label-filtered listing can lag immediately after creation. Use
+    # the unfiltered repository listing and the body marker instead, including
+    # closed Issues. Workflow concurrency serializes writes across Actions runs.
+    issues = sorted(
         (
             issue
-            for issue in github.list_issues([LABEL], state="all")
+            for issue in github.list_issues([], state="all")
             if MARKER in (issue.get("body") or "")
         ),
-        None,
+        key=lambda issue: issue["number"],
     )
+    existing = issues[0] if issues else None
+    # Heal duplicates left by older versions or interrupted concurrent clients.
+    for duplicate in issues[1:]:
+        if duplicate.get("state") != "closed":
+            github.close_issue(duplicate["number"])
     if existing is None and not report.problems:
         return None
     body = setup_body(report)

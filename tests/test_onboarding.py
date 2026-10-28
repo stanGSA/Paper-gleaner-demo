@@ -127,6 +127,7 @@ def test_creates_one_dedicated_issue_then_noops(setup_dir: Path) -> None:
     assert payload["labels"] == [LABEL]
     assert MARKER in payload["body"]
     assert listing.calls.last.request.url.params["state"] == "all"
+    assert listing.calls.last.request.url.params["labels"] == ""
 
 
 @respx.mock
@@ -167,6 +168,17 @@ def test_finds_issue_beyond_first_page(setup_dir: Path) -> None:
     )
     assert sync_setup_issue(client(), report).number == 7
     assert [c.request.url.params["page"] for c in listing.calls] == ["1", "2"]
+
+
+@respx.mock
+def test_keeps_oldest_issue_and_closes_legacy_duplicates(setup_dir: Path) -> None:
+    report = inspect_setup()
+    older = existing(report)
+    newer = {**existing(report), "number": 8}
+    respx.get(f"{API}/issues").mock(return_value=httpx.Response(200, json=[newer, older]))
+    close = respx.patch(f"{API}/issues/8").mock(return_value=httpx.Response(200, json={}))
+    assert sync_setup_issue(client(), report).number == 7
+    assert json.loads(close.calls.last.request.content)["state"] == "closed"
 
 
 @respx.mock
