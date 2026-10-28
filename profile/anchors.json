@@ -1,0 +1,42 @@
+{
+  "source_hash": "d884f7773dc0dc1375b286b3575159498ace36bf283206180d438a760dc7c955",
+  "model": "deepseek-v4.1-flash-1017",
+  "generated_at": "2026-10-28T10:42:06.839926Z",
+  "anchors": [
+    {
+      "name": "KV cache 管理与显存优化",
+      "query": "This work studies KV cache management for efficient large language model inference, including cache compression, eviction, paging, and memory allocation to reduce GPU memory footprint and improve serving throughput under limited hardware resources.",
+      "negative": false
+    },
+    {
+      "name": "长上下文与流式推理",
+      "query": "We investigate long-context and streaming inference for large language models, focusing on efficient attention and cache reuse, low-latency token generation, and maintaining throughput and memory efficiency for long sequences and continuous request streams.",
+      "negative": false
+    },
+    {
+      "name": "检索时机与自适应 RAG",
+      "query": "This paper addresses when retrieval is necessary in retrieval-augmented generation, developing adaptive retrieval policies that decide whether and what to retrieve based on model uncertainty, query characteristics, and cost-quality trade-offs.",
+      "negative": false
+    },
+    {
+      "name": "RAG 事实依据与无依据回答",
+      "query": "We study groundedness and hallucination mitigation in retrieval-augmented generation, aiming to reduce unsupported or unfaithful answers by improving evidence attribution, verification, and generation constrained by retrieved documents.",
+      "negative": false
+    },
+    {
+      "name": "高效推理系统与可复现实现",
+      "query": "This work presents reproducible systems and implementations for efficient large language model inference and retrieval-augmented generation, evaluating scheduling, memory management, batching, and serving techniques with detailed applicability and limitations.",
+      "negative": false
+    },
+    {
+      "name": "语音识别应用",
+      "query": "This paper focuses on speech recognition applications such as acoustic modeling, speech-to-text, and audio processing, without a central contribution to large language model inference or retrieval-augmented generation.",
+      "negative": true
+    },
+    {
+      "name": "医学影像应用",
+      "query": "This paper develops medical imaging applications such as image segmentation, diagnosis, or radiology report generation, rather than methods for large language model efficient inference or retrieval-augmented generation.",
+      "negative": true
+    }
+  ]
+}

@@ -1,0 +1,768 @@
+{
+  "day": "2026-10-28",
+  "generated_at": "2026-10-28T10:41:52.068538Z",
+  "overview": "今天推荐的论文主要集中在 LLM 推理与长上下文效率，包括 KV cache 管理、量化条件记忆、线性注意力路由、测试时 fast-weight 更新，以及编码代理的仓库级持久记忆。一个明显趋势是强调在线或查询条件自适应、尽量免重训部署，并同时报告真实吞吐、显存和精度损失。建议先读 [1]，它直接面向 KV cache 驱逐策略的在线选择且收益与最差情况较明确；若更关注长上下文建模，可再优先看 [3]。",
+  "papers": [
+    {
+      "id": "2610.36355",
+      "title": "WAKMan: Workload Aware KVCache Manager",
+      "abstract": "Prefix caching enables a Large Language Model (LLM) servers to reuse the Key-Value (KV) states and accelerate prefill computation stage for requests that share a prefix with earlier prompts, thus reducing latency and serving cost. With limited memory resource, the KV cache eviction policy becomes a decisive factor in determining the overall benefits of prefix caching. Production traffic may have single-turn, multi-turn, agentic, or a mixture of any combination of these request types. Our findings indicate that agentic steps return within seconds and favor recency, while popular prompts and long conversations return after many other requests and favor frequency. Across 20 mixes, no single policy is always best: vLLM's default strategy LRU provides 12% higher cache hits as compared to the frequency-oriented S3FIFO on agentic-heavy mixes but trails it by up to 22% elsewhere, and even a single workload parameter can flip the winner even for any particular mix. We present WAKMan, a workload-aware KV cache manager that picks its eviction policy from live traffic without knowing request types or reading prompts. It improves hit rate over LRU by 5 percentage points on average, with the lowest mean and worst-case optimality gap of all policies.",
+      "authors": [
+        "Suhas Kumar Morisetty",
+        "Vaibhavi Lokegaonkar",
+        "Sachin Mathew Varghese",
+        "Wesley Harris"
+      ],
+      "categories": [
+        "cs.AI"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2967,
+      "coarse_match": "KV cache 管理与显存优化",
+      "interest_score": 0.8483,
+      "positive_score": null,
+      "negative_score": 0.5515,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 9,
+      "matched_interests": [
+        "KV cache 管理与显存优化",
+        "高效推理系统与可复现实现"
+      ],
+      "reason": "论文直接研究前缀缓存场景下的 KV cache 驱逐策略，指出 LRU 与 S3FIFO 在不同负载组合下互有胜负，并给出在线自适应选择的系统实现，正好对应 KV cache 显存管理与高效推理系统兴趣。",
+      "tldr": "提出 WAKMan，根据实时流量特征在线选择 KV cache 驱逐策略，无需知道请求类型，平均命中率比 LRU 高 5 个百分点且最差情况最优性差距最小。",
+      "tags": [
+        "kv-cache",
+        "prefix-caching",
+        "eviction-policy",
+        "llm-serving"
+      ]
+    },
+    {
+      "id": "2610.35985",
+      "title": "Let the Gate Decide: Per-Lookup Precision for Quantized Conditional Memory in LLMs",
+      "abstract": "Conditional memory layers, such as DeepSeek's Engram, attach large hashed n-gram tables to a language model, and removing them from DeepSeek-V4.1-Flash costs 36.8 PopQA points. Low-bit quantization loses long-tail facts first, and the standard remedy, giving more bits to frequently accessed rows, backfires: refining lookups by access frequency is worse than refining them at random. We trace this to the gate that scales each retrieved row. A lookup's quantization error is weighted by its gate, which is small for frequent n-grams, large for the rare n-grams of long-tail entities, and computable from a 1-bit code. GateRQ therefore stores each row as a ladder of 1-bit residual codes, keeps level 1 in GPU memory to compute the gate, and reads deeper levels only for the lookups the gate ranks highest. Without retraining, GateRQ cuts GPU table memory by 7.8x on DeepSeek-V4.1-Flash, which raises vLLM throughput by 11%-31% over FP8 tables, while losing about 1 PopQA point at 1.50 bits read per lookup and 0.2 points at 2.10 bits across two models.",
+      "authors": [
+        "Tianqi Chen",
+        "Xunchao Li",
+        "Linchuan Xie",
+        "Guanghua Yu",
+        "Jianchen Zhu",
+        "Peisong Wang",
+        "Jian Cheng"
+      ],
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.23,
+      "coarse_match": "KV cache 管理与显存优化",
+      "interest_score": 0.7957,
+      "positive_score": null,
+      "negative_score": 0.5657,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 8,
+      "matched_interests": [
+        "KV cache 管理与显存优化",
+        "高效推理系统与可复现实现"
+      ],
+      "reason": "针对挂在 LLM 上的条件记忆（哈希 n-gram 表），用门控值加权的 1-bit 残差码阶梯做逐查询精度分配，实现 7.8 倍 GPU 表显存压缩并在 vLLM 上提升 11%–31% 吞吐，正是显存与吞吐优化的可复现系统工作。",
+      "tldr": "提出 GateRQ，把每行存为 1-bit 残差码阶梯、按门控排序只读深层，无需重训即把 DeepSeek-V4.1-Flash 表显存降 7.8 倍、vLLM 吞吐升 11%–31%，PopQA 仅损失约 1 点（1.50 bit/查询）。",
+      "tags": [
+        "quantization",
+        "conditional-memory",
+        "vllm",
+        "memory-footprint"
+      ]
+    },
+    {
+      "id": "2610.37645",
+      "title": "Multi-State Linear Attention with Generalized Second-Order Routing",
+      "abstract": "Self-attention plays a key role in long-sequence modeling, but its quadratic time complexity fundamentally limits the scaling of Large Language Models. Recently, Multi-State Linear Attention (MSLA) mechanisms have been proposed to make sequence modeling more efficient by splitting the context into segments and compressing each in its own memory state. MSLA aggregates the information extracted from each memory state using only the mean alignment between a query and each segment's keys, ignoring how the alignment is distributed within the segment. In order to model the relevance of a segment to a query more comprehensively and incorporate the variance of the alignment in the aggregation, we propose MERLIN (MomEnt Routing for multi-state LINear attention), a method that tracks the first and second moments of each segment's keys. Using the moments of keys, a query can recover both the mean and the variance of its alignment with each segment to perform a more content-aware aggregation of per-state readouts. Experiments on multi-state variants of Gated DeltaNet-1.3B and Mamba-2-780M show that MERLIN consistently outperforms existing aggregation methods on various long-context tasks. In particular, MERLIN outperforms baselines on RULER needle-in-a-haystack and long-context QA (+8.3% for Gated DeltaNet-1.3B and +7.0% for Mamba-2-780M) and diverse subtasks in LongBench (+13.5% and +12.0%). It even outperforms baselines that consume 4x more memory. MERLIN provides a simple and general routing mechanism for improving long-context capabilities of MSLA models.",
+      "authors": [
+        "Hee Seung Hwang",
+        "Sanghyuk Chun",
+        "Xindi Wu",
+        "Olga Russakovsky",
+        "Zhiwei Deng"
+      ],
+      "categories": [
+        "cs.CL"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2342,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.8093,
+      "positive_score": null,
+      "negative_score": 0.5751,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 7,
+      "matched_interests": [
+        "长上下文与流式推理",
+        "KV cache 管理与显存优化"
+      ],
+      "reason": "针对长序列建模中注意力二次复杂度问题，改进多状态线性注意力的分段记忆状态聚合方式，用键的一阶/二阶矩做更内容感知的读取，直接关系到长上下文下的内存-效率权衡。",
+      "tldr": "提出 MERLIN，用键的均值与方差对分段记忆状态做路由聚合；在 Gated DeltaNet-1.3B 与 Mamba-2-780M 上长上下文 QA 提升约 8.3%/7.0%，LongBench 提升 13.5%/12.0%，甚至优于多用 4 倍内存的基线。",
+      "tags": [
+        "linear-attention",
+        "long-context",
+        "memory-state",
+        "efficient-inference"
+      ]
+    },
+    {
+      "id": "2610.36794",
+      "title": "Select-TTT: Query-Conditioned Selective Fast Weight Updates for In-Place Test-Time Training",
+      "abstract": "Test-time training (TTT) enables a deployed language model to internalize incoming context on-the-fly into a small set of fast-weight parameters, rather than merely treating it as transient context for attention. In-Place TTT recently made this idea practical for large language models by repurposing the down-projection of standard MLP blocks as fast weights. However, we find that its benefit largely disappears on realistic web long-context question answering. We attribute this to In-Place TTT's uniform write schedule: every chunk is written with equal strength, so irrelevant content dilutes query-relevant information in fast-weight memory. Building on this insight, we propose Select-TTT, a model-agnostic, query-conditioned rule for In-Place TTT that scales each chunk's write strength by its relevance to the user query. This relevance signal requires no supervision and no new parameters: it is read directly from the model's frozen output head, as the probability mass that a chunk's hidden states assign to the query tokens. A temperature-scaled softmax turns these scores into learning-rate multipliers, leaving the chunk-wise, context-parallel computation of In-Place TTT intact. Select-TTT consistently improves long-context question answering on two benchmarks and two backbones. These findings highlight the value of query-conditioned fast weight writes for practical test-time training on long-context question answering, which is also potentially promising for long-horizon agent tasks involving multiple user queries over evolving contexts.",
+      "authors": [
+        "Yue Wu",
+        "Yang Zhang",
+        "Weinan Gan",
+        "Chongming Gao",
+        "Xinsen Guo",
+        "Xiaoyuan Li",
+        "Fuli Feng"
+      ],
+      "categories": [
+        "cs.LG",
+        "cs.AI",
+        "cs.CL"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2613,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.8445,
+      "positive_score": null,
+      "negative_score": 0.5832,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 6,
+      "matched_interests": [
+        "长上下文与流式推理",
+        "高效推理系统与可复现实现"
+      ],
+      "reason": "论文针对长上下文问答中 In-Place TTT 的均匀写入导致无关内容稀释问题，提出按 query 相关性调节写入强度，属于长上下文高效建模的一条可替代 KV 记忆的路线，方法无需新参数、易于复现。",
+      "tldr": "提出 Select-TTT，用冻结输出头对 query token 的概率质量作为无监督相关性信号调节各 chunk 的 fast-weight 写入强度，在两个长上下文 QA 基准和两个骨干上稳定提升。",
+      "tags": [
+        "long-context",
+        "test-time-training",
+        "fast-weights",
+        "qa"
+      ]
+    },
+    {
+      "id": "2610.36153",
+      "title": "Stratum: Repository Memory for Coding Agents Beyond the Context Window",
+      "abstract": "Context windows have grown a thousand-fold, yet coding agents still start every session with no memory of their past work. They re-read files, retry failed approaches, and forget root causes they established hours earlier. This is not a context-length problem but a memory-architecture problem. Our hypothesis: coding agents need persistent, experience-aware repository memory, so that knowledge survives from one session to the next. Three measurements on real repositories motivate the design. First, mid-size projects already exceed the largest production context windows, and storing knowledge inside the model's key-value (KV) cache costs $10^4$ to $10^5$ times more bytes than storing it as indexed text. Second, across 752 real bug-fix commits, the median fix edits two files, and these files plus their direct imports amount to less than 10% of the repository; the bottleneck is selection, not capacity. Third, even with transitive import reachability and test links, 47% of co-edited file pairs remain structurally disconnected; the knowledge needed for selection must be mined from history and experience. We sketch Stratum, a tiered memory that lives with the repository and serves it through page-safe tools: every response states what was returned, what remains, and what it cost. Retrieval over a store of one million nodes takes 1.7 ms at the median. In a multi-session experiment on eight real bugs, a fresh agent that inherited a prior session's memory, written by a different model, identified the root-cause file in 21 of 24 trials versus 6 of 24 for a retrieval-only baseline (Fisher $p<10^{-4}$), at 4.5x lower median token cost. With the notes of all eight investigations pooled in one store, success remained 8/8.",
+      "authors": [
+        "Yuvraj Sehgal",
+        "Mahsa Panahandeh",
+        "Naser Ezzati-Jivan"
+      ],
+      "categories": [
+        "cs.SE",
+        "cs.AI"
+      ],
+      "announce_type": "cross",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2317,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.7693,
+      "positive_score": null,
+      "negative_score": 0.5376,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 6,
+      "matched_interests": [
+        "长上下文与流式推理",
+        "KV cache 管理与显存优化"
+      ],
+      "reason": "从“上下文长度不是瓶颈、记忆架构才是”出发，量化指出把知识存进 KV cache 比存为索引文本贵 10^4–10^5 倍，并设计仓库级分层记忆，与长上下文与显存成本权衡直接相关。",
+      "tldr": "提出 Stratum：与代码仓库共存的分层持久记忆，通过页安全工具返回检索结果并报告开销；百万节点检索中位 1.7ms，在多会话真实 bug 修复中让新会话继承前一模型写入的记忆。",
+      "tags": [
+        "agent-memory",
+        "context-window",
+        "retrieval",
+        "coding-agents"
+      ]
+    }
+  ],
+  "others": [
+    {
+      "id": "2610.36918",
+      "title": "TrawMem: Reframing Agent Memory as Task-Oriented Role-Adaptive Workspaces",
+      "abstract": "Large language model (LLM) agents rely on memory systems to leverage long-term interactions, yet existing systems typically retrieve memories based on their relevance to the current query and use them as contextual evidence. However, relevance alone does not characterize how a memory contributes to task solving: the same memory may serve different roles across tasks, such as directly supporting the answer or linking to complementary memories with weaker semantic relevance but necessary information. We therefore reframe agent memory systems as Task-Oriented Role-Adaptive Workspaces, where memories are selected and organized by their task-oriented roles and relations. Based on this view, we propose TrawMem, which organizes interaction histories into local threads and constructs task-oriented workspaces by assigning roles and jointly selecting complementary memories. Experiments on LoCoMo and MemGallery with four open- and closed-source backbones show consistent improvements over representative memory systems, with macro-F1 gains of 2.23-3.14 points. On LoCoMo, TrawMem improves the LLM-Judge score over SimpleMem by 4.07 and 4.31 percentage points on Qwen3.5-9B and DeepSeek-V4-Flash, respectively, while requiring approximately 12.8% and 5.1% fewer context tokens, respectively.",
+      "authors": [
+        "Mingyu Zhang",
+        "Zixu Li",
+        "Zhiheng Fu",
+        "Zhiwei Chen",
+        "Jinhe Bi",
+        "Yupeng Hu"
+      ],
+      "categories": [
+        "cs.CL"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2305,
+      "coarse_match": "高效推理系统与可复现实现",
+      "interest_score": 0.8001,
+      "positive_score": null,
+      "negative_score": 0.5696,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 5,
+      "matched_interests": [
+        "长上下文与流式推理"
+      ],
+      "reason": "把智能体记忆重构为按任务角色选择与组织的工作区，不再只看查询相关性，在 LoCoMo 上同时提升效果并减少 5.1%–12.8% 的上下文 token，与长上下文成本和检索选择有关，但不涉及 KV cache 或 RAG 依据性。",
+      "tldr": "提出 TrawMem，将交互历史组织为局部线索并按任务角色联合选取互补记忆；在 LoCoMo/MemGallery 上 macro-F1 提升 2.23–3.14 点，且上下文 token 更少。",
+      "tags": [
+        "agent-memory",
+        "retrieval",
+        "context-efficiency"
+      ]
+    },
+    {
+      "id": "2610.36574",
+      "title": "ADTGuard: Adaptive Depth-Time Safeguard for Streaming Inference in Large Language Models",
+      "abstract": "Large Language Models (LLMs) can generate fluent responses to diverse user requests, yet streaming may expose users to harmful content before generation is complete. Existing guardrails face two limitations in this setting. First, post-hoc moderation at response or chunk boundaries delays intervention, risking harmful exposure when content is released before verification. Second, even with token-level detection, coarse response-level supervision does not specify when harmful content begins, while fixed-layer readouts may miss relevant safety signals at other depths. To address these limitations, we introduce ADTGuard, which checks each token before release, progressively refines token-level training targets, and adapts layer selection to the current prefix. ADTGuard models risk across depth and time through Depth-Time Safety Dynamics (DTSD), which integrates safety evidence across layers at each token and uses it to guide risk accumulation over successive tokens. To adapt the choice of observation layers to the current prefix, we propose the Causal Depth Router (CDR). With only response-level labels available, we further develop Risk-Onset Target Refinement (RTR) to progressively construct token-level training targets for both components. Through extensive experiments across multiple safety benchmarks, we demonstrate that ADTGuard consistently achieves strong streaming detection performance, matching or surpassing state-of-the-art safeguards while requiring only 16M trainable parameters and maintaining competitive per-token latency.",
+      "authors": [
+        "Chuming Wei",
+        "Churui Yang",
+        "Zihan Zhang",
+        "Ruien Li",
+        "Wusheng Zhang",
+        "Yan Zhang",
+        "Guangwen Yang"
+      ],
+      "categories": [
+        "cs.AI"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2708,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.8335,
+      "positive_score": null,
+      "negative_score": 0.5627,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 4,
+      "matched_interests": [
+        "长上下文与流式推理"
+      ],
+      "reason": "论文关注流式生成过程中的逐 token 安全检测，与流式推理场景有交集，但核心是安全护栏的检测时延与内容风险建模，而非显存、吞吐或检索相关的高效推理。",
+      "tldr": "提出 ADTGuard，在 token 释放前做风险检测，融合多层安全信号并自适应选择观察层，在多个安全基准上达到或超过现有流式护栏且只需 16M 可训练参数。",
+      "tags": [
+        "streaming",
+        "guardrail",
+        "safety",
+        "token-level"
+      ]
+    },
+    {
+      "id": "2610.36576",
+      "title": "Less is more: learning what to profile for GPU kernel optimization",
+      "abstract": "Large language models have recently shown strong potential for automatically optimizing GPU kernels, yet their effectiveness depends critically on the hardware information available to the kernel optimization model. Existing systems typically rely on predefined profiling strategies, leaving what to profile largely outside the optimization process. We show that effective profiling is not simply about collecting more information: increasing the number of profiling metrics does not monotonically improve kernel optimization, while the most useful profiling information varies across kernels. Our theoretical analysis further shows that, under such heterogeneous profiling utility, kernel-conditioned selection can outperform any single fixed profiling configuration. Motivated by this observation, we propose AutoProfiler, a feedback-driven framework for learning a deterministic profiling tree from optimization feedback. The tree is iteratively refined through REWRITE and SPLIT operations, with an LLM generating candidate modifications and empirical evaluation determining their acceptance. Once constructed, the tree quickly gathers the required profiling information for any kernel, allowing the LLM rewriter to be invoked only once. Experiments on KernelBench show that our approach improves kernel optimization over fixed profiling configurations under constrained profiling budgets. These results suggest that hardware profiling should evolve from static metric collection toward profiling reasoning, making profiling itself a new dimension for improving kernel optimization. The codes are available at https://github.com/Satissss/AutoProfiler.",
+      "authors": [
+        "Yihan Wang",
+        "Peiyu Liu",
+        "Runyu Chen",
+        "Wei Xu"
+      ],
+      "categories": [
+        "cs.LG",
+        "cs.AI"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2688,
+      "coarse_match": "KV cache 管理与显存优化",
+      "interest_score": 0.7902,
+      "positive_score": null,
+      "negative_score": 0.5214,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 4,
+      "matched_interests": [
+        "高效推理系统与可复现实现"
+      ],
+      "reason": "论文用 LLM 自动优化 GPU kernel 并选择 profiling 指标，属于底层性能优化与可复现实验流程，但与 KV cache、长上下文推理或 RAG 等语言模型推理主线只有间接交集。",
+      "tldr": "提出 AutoProfiler，从优化反馈中学习 kernel 相关的确定性 profiling 树，在 KernelBench 上以受限 profiling 预算优于固定配置。",
+      "tags": [
+        "gpu-kernel",
+        "profiling",
+        "llm-optimization",
+        "kernelbench"
+      ]
+    },
+    {
+      "id": "2610.36623",
+      "title": "God Does Not Play Dice: Enforcing Batch Invariance in Agentic Kernel Generation",
+      "abstract": "Large language model (LLM) serving systems dynamically batch user requests for GPU execution, so the same request may be processed alongside different requests across runs. If the GPU kernels lack batch invariance (BI), this changing batch context can alter the numerical output for an unchanged input, undermining reproducibility. Existing kernel generation agents focus on correctness and efficiency but \\emph{overlook BI}. We find 19 confirmed BI violations among 83 batch-applicable released artifacts. To address this limitation, we propose \\tool, which combines contract-guided static dependency analysis with dynamic validation of bitwise consistency across batch contexts. \\tool is designed as a plug-in component for general kernel agents, allowing their original optimization capabilities to be reused while adding BI enforcement. We integrate it as successive acceptance gates in the optimization loop, rejecting structurally risky or dynamically non-invariant candidates before performance benchmarking and returning feedback to the agent. Experiments across three agent frameworks under baseline and BI-aware generation on real world LLM serving tasks show that \\tool improves the BI pass rate from 67.6\\% to 91.9\\% while retaining 91.8\\% of the baseline geometric mean speedup. These results demonstrate that \\tool can be incorporated into kernel optimization by agents as an additional reliability objective alongside correctness and speed.",
+      "authors": [
+        "Youwei Bao",
+        "Chengpeng Wang",
+        "Simin Chen"
+      ],
+      "categories": [
+        "cs.AI",
+        "cs.LG",
+        "cs.SE"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2607,
+      "coarse_match": "KV cache 管理与显存优化",
+      "interest_score": 0.8005,
+      "positive_score": null,
+      "negative_score": 0.5398,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 4,
+      "matched_interests": [
+        "高效推理系统与可复现实现"
+      ],
+      "reason": "论文关注 LLM 服务动态 batching 下 GPU kernel 的批次不变性导致输出不可复现，属于推理系统可靠性问题，但不涉及 KV cache 管理、长上下文或 RAG。",
+      "tldr": "提出在 kernel 生成 agent 中加入批次不变性验收门，将 BI 通过率从 67.6% 提升到 91.9%，同时保留 91.8% 的基线加速。",
+      "tags": [
+        "batch-invariance",
+        "kernel-generation",
+        "llm-serving",
+        "reproducibility"
+      ]
+    },
+    {
+      "id": "2610.36734",
+      "title": "CAMR: Compatibility-Aware Memory Replay for Continual Learning in Large Language Models",
+      "abstract": "Continual learning requires large language models to acquire new knowledge and capabilities while retaining what they have learned. Fine-tuning and replay support acquisition and retention, but deciding whether incoming examples need supervision and which historical examples to revisit remains a challenge. We propose Compatibility-Aware Memory Replay (CAMR), an adaptive framework that jointly controls current-example supervision and historical replay. CAMR combines compatibility checks with a learned memory gate to guide an online policy over three actions: learning incoming examples with general replay, jointly reinforcing compatible related examples, and skipping direct supervision of verified mastered duplicates. The policy learns from acquisition, retention, and training-cost feedback under a bounded per-arrival replay budget. We evaluate CAMR with Qwen3-8B-Base on continual factual updating and cross-task and cross-domain learning. On WikiBigEdit, CAMR consistently leads evaluated methods in Original Match from 3K to 100K facts, reaching 93.66% after just 3K facts and surpassing Full-history Replay (LoRA) after 100K facts. It also achieves the highest final scores on all four selected TRACE tasks and maintains or improves earlier-task performance relative to post-acquisition levels in a sequence spanning financial question answering, mathematical reasoning, code generation, and summarization.",
+      "authors": [
+        "Jingpu Yang",
+        "Tianhao Li",
+        "Fengxian Ji",
+        "Yufeng Wang",
+        "Shuxin Zheng",
+        "Xiaoqing Zhang"
+      ],
+      "categories": [
+        "cs.CL"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2384,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.8239,
+      "positive_score": null,
+      "negative_score": 0.5855,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 4,
+      "matched_interests": [
+        "检索时机与自适应 RAG"
+      ],
+      "reason": "CAMR 有一个学习到的记忆门控，用来决定是否需要监督当前样本、是否回放哪些历史样本，这和 RAG 中“何时检索、检索什么”的自适应决策在思路上相通；但它面向连续学习中的知识更新，不涉及 KV cache 或推理显存/吞吐。",
+      "tldr": "提出兼容性感知记忆回放框架，联合控制新样本监督与历史回放；在 WikiBigEdit 上 3K 事实后即达 93.66% Original Match，并在 TRACE 四项任务上取得最高分。",
+      "tags": [
+        "continual-learning",
+        "memory-replay",
+        "adaptive-gating",
+        "llm"
+      ]
+    },
+    {
+      "id": "2610.36329",
+      "title": "Plenty of Room in the Middle: Revealing Opportunities on a GPU Cluster via Fine-Grained Monitoring",
+      "abstract": "GPU clusters have become essential computing resources for AI and scientific research in academia and industry. However, their high cost and growing demand often result in long queueing delays. While previous monitoring efforts have operated at second- or minute-level frequencies, they primarily informed job-level scheduling for clusters and lacked the detail needed to optimize GPU-level utilization. This paper presents an in-depth study of a university research GPU cluster, analyzing resource usage at 100 ms intervals. We have developed a lightweight monitoring tool that leverages Nvidia's DCGM library to capture fine-grained \"compute utilization\" metrics within GPUs. Deployed on a cluster with 89 nodes and 319 GPUs, our tool collected data over several months. This paper focuses on a 10-day period with 7,399 jobs submitted by 150 users from 12 departments. Our study reveals three key findings: (1) the GPU cluster exhibits significant underutilization, with over 70% of jobs using less than 20% of GPU memory and 50% averaging below 5% Streaming Multiprocessor (SM) utilization; (2) 80% of jobs have a drastic mismatch between their requested and actual durations, significantly limiting the scheduler's effectiveness; and (3) the multi-GPU jobs we examined show highly periodic communication patterns. These findings suggest there is plenty of room in the middle: substantial utilization gains are available through better job scheduling and GPU multitasking, independent of hardware or application improvements. Our monitoring solution is available as open-source software at https://github.com/als244/gpu_server_monitoring.",
+      "authors": [
+        "Andrew Sheinberg",
+        "Samyak Gupta",
+        "Kai Li"
+      ],
+      "categories": [
+        "cs.AI",
+        "cs.DC"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2369,
+      "coarse_match": "KV cache 管理与显存优化",
+      "interest_score": 0.7377,
+      "positive_score": null,
+      "negative_score": 0.5008,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 4,
+      "matched_interests": [],
+      "reason": "通过 DCGM 以 100ms 粒度监控 GPU 集群，发现 70% 以上作业显存占用低于 20%、SM 利用率低，这与显存/吞吐优化的关切有间接关联，但对象是集群调度而非 LLM 推理系统本身。",
+      "tldr": "用轻量监控工具采集 319 块 GPU 十天的细粒度数据，揭示显存与 SM 利用率严重偏低、申请时长与实际时长错配等问题，指出调度与 GPU 多任务化仍有大量提升空间。",
+      "tags": [
+        "gpu-cluster",
+        "monitoring",
+        "utilization",
+        "scheduling"
+      ]
+    },
+    {
+      "id": "2610.36453",
+      "title": "Correction or Manipulation? Measuring Epistemic Vigilance in LLM Agents Under User Pressure",
+      "abstract": "LLM agents that answer questions and act on behalf of users must decide when to yield to a user who disagrees. Disagreement may correct a genuine error or may be an attempt at manipulation. Prior work shows that models frequently abandon correct answers when challenged by users, yet it remains unclear whether they distinguish correction from manipulation or merely differ in their propensity to concede. We examine this question across seven LLMs from four vendors in two studies, one on the answers agents give and one on the actions they take as customer-support agents whose policy permits account changes only for verified users. Simulated users push toward correct and incorrect answers with graded pressure. Following research on epistemic vigilance, the pressure either appeals to the source, such as claimed authority, or offers content the agent cannot verify, namely a cited source. Drawing on signal detection theory, we measure on a set of benchmark questions how much more readily each agent concedes to correction than to manipulation, separately from its overall propensity to concede. Citations made five of seven models readier to concede and four worse at discriminating, while stronger wording added little. In the agentic study, five models never violated the verification policy, including models that readily abandoned correct answers, so concession on answers did not predict violations of policy. Ministral 3B violated the policy mainly under claimed authority, and Ministral 8B reported changes it had not made. An instruction to revise only on verifiable evidence chiefly shifted propensity to concede rather than improving discrimination. Concession rates alone are therefore misleading, and agents should be evaluated on both their discrimination and the actions they take.",
+      "authors": [
+        "Nardine Basta",
+        "Venus Haghighi",
+        "Dali Kaafar",
+        "Amin Beheshti"
+      ],
+      "categories": [
+        "cs.AI"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2567,
+      "coarse_match": "RAG 事实依据与无依据回答",
+      "interest_score": 0.7628,
+      "positive_score": null,
+      "negative_score": 0.5061,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 3,
+      "matched_interests": [
+        "RAG 事实依据与无依据回答"
+      ],
+      "reason": "论文研究 LLM agent 在用户施压下是否区分「纠正」与「操纵」，涉及模型对无依据主张的让步，与 RAG 减少无依据回答的问题有很弱的概念关联，但并非检索或依据性方法。",
+      "tldr": "在七个模型上用信号检测理论测量对纠正与操纵的让步差异，发现引用来源会让五个模型更易让步、四个模型判别力下降。",
+      "tags": [
+        "epistemic-vigilance",
+        "sycophancy",
+        "agents",
+        "trust"
+      ]
+    },
+    {
+      "id": "2610.36959",
+      "title": "Live-OPSD: On-Policy Self-Distillation for Proactive Streaming Large Video Models",
+      "abstract": "Streaming multimodal assistants must make response decisions while events are still unfolding. They need to recognize when the available evidence warrants a response, produce an appropriate continuation, and remain silent otherwise. Supervised fine-tuning learns from recorded assistant turns, but does not directly train on the response prefixes produced by the evolving policy itself. We introduce Live-OPSD, an on-policy self-distillation method that uses privileged hints available only during training to supervise the policy on its own outputs. The policy first generates a continuation from the streaming context alone. The same model then re-evaluates that continuation with a hint describing the relevant evidence, and the resulting distributions guide the unhinted policy. On Qwen3-Omni-30B-A3B, Live-OPSD attains an average score of 59.64 on LiveProBench, 5.26 points above the strongest continued-SFT baseline, and stays competitive on OVO-Bench (65.84). These results indicate that guiding the policy on its own outputs with privileged hints improves both when and how a streaming assistant responds.",
+      "authors": [
+        "Kaixuan Du",
+        "Xin Wan",
+        "Dai Guan",
+        "Ming Chen",
+        "Xiaoxi Jiang",
+        "Guanjun Jiang"
+      ],
+      "categories": [
+        "cs.LG"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2446,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.7891,
+      "positive_score": null,
+      "negative_score": 0.5445,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 3,
+      "matched_interests": [
+        "长上下文与流式推理"
+      ],
+      "reason": "论文处理流式场景下「何时该回应」的决策，与流式推理的时机判断有形式上的相似，但对象是大型视频模型的多模态流式助手，与语言模型 KV cache／检索时机主线距离较远。",
+      "tldr": "提出 Live-OPSD，用训练期特权提示对策略自身输出做 on-policy 自蒸馏，在 LiveProBench 上比最强 SFT 基线高 5.26 分。",
+      "tags": [
+        "streaming",
+        "video-llm",
+        "self-distillation",
+        "on-policy"
+      ]
+    },
+    {
+      "id": "2610.36109",
+      "title": "Beyond Update Counts: A Control Map for Evaluating Test-Time Model Updates",
+      "abstract": "Test-time updating lets a language model change persistent state after training---such as model weights, adapter parameters, or a memory module---before or while answering queries. Existing evaluations often compare systems using update count or frequency and performance measured immediately afterward. These summaries omit what is updated, where, when, and in what order. The same total can therefore hide an important difference: one system may answer after one update while another answers after two. We introduce the Control Map, an evaluation framework that records the committed updates preceding each scored answer and separately evaluates behavioral changes, immediate learning (acquisition), later recall (retention), preservation of unrelated behavior (locality), and performance in new settings. We prove when counts alone determine final state and show, under stated assumptions, how differences between pre-answer histories limit differences in average scores. Using ControlMap, our experiments reveal three insights. First, update scheduling matters: at a 760M-parameter checkpoint, 24 schedules with the same update count yield 19.7%--34.2% accuracy. Second, learning an edit does not guarantee that it lasts or remains contained: all six selected CounterFact LoRA settings learn the new information, while ROME retains edits at all 13 operating points but fails locality at each. Third, no editor performs best consistently across models, benchmarks, and tests. Evaluations should therefore report update histories and assess acquisition, retention, and locality separately.",
+      "authors": [
+        "Zehao Zhao",
+        "Shangjian Yin",
+        "Rui Liu",
+        "Chongyang Bai",
+        "Mark Ibrahim",
+        "Kavosh Asadi",
+        "Yuchen Lu",
+        "Hang Cui",
+        "Hamed Firooz"
+      ],
+      "categories": [
+        "cs.LG",
+        "cs.CL"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.241,
+      "coarse_match": "高效推理系统与可复现实现",
+      "interest_score": 0.8069,
+      "positive_score": null,
+      "negative_score": 0.5658,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 3,
+      "matched_interests": [],
+      "reason": "论文提出评估测试时模型更新（权重、adapter、记忆模块）的 Control Map 框架，关注更新调度与保持性，与 KV cache 显存优化和 RAG 检索时机无直接关系。",
+      "tldr": "提出 ControlMap 记录每次作答前的更新历史并分维度评估，实验显示相同更新次数下不同调度准确率相差 19.7%–34.2%。",
+      "tags": [
+        "test-time-update",
+        "evaluation",
+        "lora",
+        "model-editing"
+      ]
+    },
+    {
+      "id": "2610.37380",
+      "title": "Same Verdict, Different Readers: Personalizing Fact-Checking Explanations from Relative Preferences",
+      "abstract": "Fact-checking explanations help Web users understand why a claim receives its verdict, yet the same explanation may not satisfy readers with different backgrounds and preferences. We formulate Faithful Personalized Fact-Checking Explanation Rewriting, which adapts an existing explanation to individual readers while preserving factual fidelity. Rather than relying on reader-written reference explanations, we learn personalized rewriting from the relative preferences of LLM-simulated readers. However, this presents two challenges: distinguishing persona-specific preferences from general explanation quality and learning beyond a limited set of predefined explanation styles. To address these challenges, we propose Personalized Explanation Rewriting via Preference Learning (PERPL), a framework consisting of two components. Simulated Preference Construction derives persona-specific supervision from simulated reader preferences through cross-persona reciprocal pairing. Progressive Preference Learning first trains a lightweight rewriter on the constructed supervision and then refines it through exploration-guided preference optimization, enabling it to discover preferred explanations beyond the predefined styles. Extensive experiments demonstrate that PERPL outperforms much larger general-purpose LLMs in personalized preference alignment while maintaining high factual fidelity.",
+      "authors": [
+        "Haokun Wen",
+        "Xuemeng Song",
+        "Mong-Li Lee",
+        "Wynne Hsu"
+      ],
+      "categories": [
+        "cs.CL"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2333,
+      "coarse_match": "RAG 事实依据与无依据回答",
+      "interest_score": 0.7549,
+      "positive_score": null,
+      "negative_score": 0.5216,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 3,
+      "matched_interests": [],
+      "reason": "关注事实核查解释的个性化改写与读者偏好对齐，只保留事实保真度，属于可解释性/偏好学习，不涉及检索时机、无依据回答抑制或推理效率。",
+      "tldr": "提出 PERPL，用 LLM 模拟读者构造人设偏好监督，再通过渐进式偏好优化训练轻量改写器，使个性化事实核查解释优于更大的通用模型且保持事实保真。",
+      "tags": [
+        "fact-checking",
+        "personalization",
+        "preference-learning"
+      ]
+    },
+    {
+      "id": "2610.36585",
+      "title": "Recall or Relearn? A Mixture of In-Context Experts for Recurring Concept Drift",
+      "abstract": "Tabular foundation models (TFMs) are being applied to Web data streams such as network intrusion detection, where they adapt by updating the labelled rows of their context without retraining. When a past concept returns after leaving the context, a TFM faces a recall-or-relearn decision between restoring stored rows of the concept and relearning it from new labels. We propose MICE (Mixture of In-Context Experts), a training-free learner that cuts the stream into segments at detected changes. It merges a closed segment into a stored context when the TFM's estimated additional error on the segment is within a tolerance, under a capacity limit on stored contexts. A fast level weights the stored contexts and first-in-first-out (FIFO) windows by the log-loss of their predictions on the last labelled batch. We show that, with pure stored contexts and a margin condition, this fast level gains over relearning, in expected accuracy, the normalised positive area between the stored context's accuracy and the TFM's learning curve, up to a first-batch term. A slow level mixes the fast level's prediction with that of the FIFO window of the last labelled rows and bounds the discounted half-Brier regret of MICE against this window at every time. Learning curves measured beforehand predict the ordering of the observed recall gains. MICE outperforms reset, which empties the context at detected drifts, on grid streams with random boundary phases. Merging keeps fewer experts than pools that store every segment, and with fixed segmentation a time-matched snapshot pool matches MICE on the shifted grid. On real streams, MICE has the highest mean accuracy of all policies we compare.",
+      "authors": [
+        "Zhangkai Wu",
+        "Xu Zhang",
+        "Zhihong Cui",
+        "Yiqi Wang",
+        "Yi Zhang"
+      ],
+      "categories": [
+        "cs.LG",
+        "cs.IR"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2302,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.7825,
+      "positive_score": null,
+      "negative_score": 0.5524,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 3,
+      "matched_interests": [],
+      "reason": "面向表格基础模型的重复概念漂移，用“上下文专家”混合在回放旧行与重新学习之间取舍，属于上下文窗口内的记忆/容量管理，但应用与模型形态与 LLM 高效推理、RAG 距离较远。",
+      "tldr": "提出免训练方法 MICE，在检测到漂移时分段并合并旧上下文为专家，按近期对数损失加权；分析表明在间隔条件下回放优于重学，并在网格流数据上优于重置策略。",
+      "tags": [
+        "concept-drift",
+        "in-context-learning",
+        "tabular",
+        "memory"
+      ]
+    },
+    {
+      "id": "2610.37070",
+      "title": "Correctness Conditioning as Selection in Chain-of-Thought Faithfulness Evaluation",
+      "abstract": "Restricting chain-of-thought (CoT) faithfulness evaluation to correctly answered instances changes the population being measured. We study this selection step in a seven-variable structural causal model and derive the exact observed gap $\\Delta = \\operatorname{Cov}(A, C)/P(C=1)$. The model distinguishes difficulty confounding from shortcut-induced collider bias and states the conditional-independence assumption needed to express the gap through latent response propensities. A protocol review of 18 papers distinguishes answer-correctness restrictions from agreement-based selection, benchmark construction, and training-data filtering. We evaluate four sub-ceiling deployments on arithmetic tasks and observe positive selection gaps in all four. The primary GLM-5.3 run yields a +7.4 percentage-point gap ($n = 1000$, $p < 0.0001$), and pooled Cochran-Mantel-Haenszel analysis gives OR = 1.70 ($p < 10^{-6}$). An assumption-free covariance decomposition assigns 42.8% of the GLM-5.3 gap to between-stratum variation in interventionable-operation count, leaving the majority unattributed. When counterfactual compliance is observable for every instance, evaluating all traces directly estimates population faithfulness without correctness filtering.",
+      "authors": [
+        "Yueer Pan",
+        "Yuexi Pan"
+      ],
+      "categories": [
+        "cs.AI"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.263,
+      "coarse_match": "RAG 事实依据与无依据回答",
+      "interest_score": 0.7745,
+      "positive_score": null,
+      "negative_score": 0.5114,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 2,
+      "matched_interests": [],
+      "reason": "论文讨论链式思维忠实性评估中「只保留答对样本」带来的选择偏差与因果建模，与 KV cache、RAG、高效推理系统均无实质交集。",
+      "tldr": "用七变量结构因果模型刻画正确性筛选造成的忠实性评估差距，在四个算术任务上观察到 +7.4 个百分点的选择偏差。",
+      "tags": [
+        "chain-of-thought",
+        "faithfulness",
+        "causal-inference",
+        "evaluation"
+      ]
+    },
+    {
+      "id": "2610.35930",
+      "title": "Who Convinced Whom? Tracing How LLMs Change Their Minds in Multi-Agent Systems",
+      "abstract": "Multi-agent debate (MAD) aims to improve language-model decisions through the exchange of arguments, yet agreement after debate need not reflect independent corroboration. We investigate how peer communication influences individual decisions and collective outcomes through behavioral and internal interventions. We introduce MAD Bench, a 2,400-question benchmark spanning knowledge and reasoning, values and moral judgment, and safety and refusal, and evaluate three open-weight models using a round-matched independent-reflection control. Among answer-changing responses, a forced-choice readout before rationale generation matches the eventual answer more often in debate than in reflection (65.4% versus 22.3% on Qwen3.5-9B). Message ablations reveal model-dependent effects of peer answers and reasoning, while attributing identical text to the receiver rather than another agent substantially changes its influence. For the tested source descriptions, stated track record affects answer preferences more strongly than professional-status cues across all three models. Attention masking produces different changes in decision margins across the three checkpoints. On fully parsed, reference-labelled non-numeric questions, debate yields small estimated accuracy improvements over initial majority voting, while increasing the rate of unanimous wrong answers by 3.1-7.4 percentage points relative to reflection. Longer debates show persistent consensus and greater correlation between agents' correctness than reflection. These findings show that stronger consensus can coexist with more shared errors, motivating evaluations that assess dependence and unanimous errors alongside accuracy.",
+      "authors": [
+        "Arnesh Batra",
+        "Aniket Khandelwal",
+        "Jashn Khemani",
+        "Krish Thukral",
+        "Arush Gumber",
+        "Denis Federico Lim",
+        "Ujwal Kumar",
+        "Phan Xuan Tan"
+      ],
+      "categories": [
+        "cs.MA",
+        "cs.AI"
+      ],
+      "announce_type": "cross",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.237,
+      "coarse_match": "RAG 事实依据与无依据回答",
+      "interest_score": 0.7334,
+      "positive_score": null,
+      "negative_score": 0.4965,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 2,
+      "matched_interests": [],
+      "reason": "研究多智能体辩论中同伴信息如何改变模型答案与共识，属于模型行为/机制分析，不涉及 KV cache、长上下文推理效率或 RAG 检索与事实依据。",
+      "tldr": "构建 2400 题 MAD Bench，用行为与内部干预分析辩论中的说服与共识，发现辩论相对独立反思仅带来小幅准确率提升，同时使一致错误答案增加 3.1–7.4 个百分点。",
+      "tags": [
+        "multi-agent-debate",
+        "llm-behavior",
+        "benchmark"
+      ]
+    },
+    {
+      "id": "2610.37648",
+      "title": "Scaling Laws for Tool-Use Agents via Controllable Environment Synthesis",
+      "abstract": "We explore how to build performant large language model (LLM) tool-use agents that complete complex, multi-step tasks. Specifically, we study how data composition in synthetically generated tool-use environments affects the training of such agents. To do so, we propose the SynthAPI pipeline, which explicitly controls the diversity of generated environments along the axes of tools, tasks, and the databases on which the tools operate. By systematically varying SynthAPI's generation controls in 458,752 tasks across 849 trained models of four different sizes, we derive a scaling law that predicts downstream tool-use agent generalization based on the scale and composition of the synthesized environments. These predictable relationships reveal several lessons for scaling tool-use agent data. As data budgets grow, scaling tool and database diversity becomes more effective than increasing the number of tasks, and increasing data complexity yields larger gains. Scaling according to these findings yields agents that outperform models trained on data from prior work in large-scale tool-use agent and synthetic environment generation across four evaluation benchmarks.",
+      "authors": [
+        "Andrew Szot",
+        "Samira Abnar",
+        "Omar Attia",
+        "Abbas Kazerouni",
+        "Michael Kirchhof",
+        "Cheng-Yu Hsieh",
+        "Raviteja Vemulapalli",
+        "Alexander Toshev"
+      ],
+      "categories": [
+        "cs.LG"
+      ],
+      "announce_type": "new",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2299,
+      "coarse_match": "高效推理系统与可复现实现",
+      "interest_score": 0.7849,
+      "positive_score": null,
+      "negative_score": 0.5549,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 2,
+      "matched_interests": [],
+      "reason": "研究工具调用智能体的合成环境数据配比与缩放律，属于训练数据工程，与 KV cache、长上下文推理效率或 RAG 检索时机均无直接关系。",
+      "tldr": "提出 SynthAPI 可控合成工具/任务/数据库多样性，在 849 个模型、45 万余任务上拟合缩放律，据此扩数据得到的智能体在四个基准上优于先前数据训练结果。",
+      "tags": [
+        "tool-use-agents",
+        "data-synthesis",
+        "scaling-law"
+      ]
+    },
+    {
+      "id": "2610.36340",
+      "title": "CrowdCC: Jointly Benchmarking Corruption Robustness and Deployment Quantization in Crowd Counting",
+      "abstract": "Crowd-counting models deployed on edge devices face two shifts: inputs are degraded along the capture and transmission pipeline, while models are quantized to satisfy resource constraints. Yet corruption robustness and deployment quantization are typically evaluated separately. We introduce CrowdCC, a controlled corruption benchmark that jointly evaluates these effects using 23 deployment-motivated corruptions at three severity levels, four crowd-counting datasets, and 26 models using A100 TensorRT engines at FP32, FP16, and post-training INT8 precision, paired with throughput and energy measurements from corresponding Jetson Orin NX configurations. The corruptions span six families, with head annotations adjusted when geometry or visibility changes. Our evaluation shows that capture-chain corruptions consistently produce the largest degradation across the evaluated models, while crowd density affects absolute and relative error differently. Clean accuracy does not fully predict corrupted performance. INT8 alters corruption robustness substantially more than FP16, with no systematic direction, and does not consistently improve latency or energy. INT8 inference efficiency is strongly associated with reformat overhead in the compiled engine, while slowdowns are also observed under limited INT8 coverage. Precision changes corrupted-error rankings and robustness-cost frontiers, showing why model selection must consider corruption robustness and measured deployment cost together. The code is available at https://github.com/Tulane-Computer-Architecture-Systems/CrowdCC-Release.",
+      "authors": [
+        "S Mahmudul Hasan",
+        "Lu Peng"
+      ],
+      "categories": [
+        "cs.CV",
+        "cs.AI"
+      ],
+      "announce_type": "cross",
+      "announced": "2026-10-28T04:00:00Z",
+      "coarse_score": 0.2386,
+      "coarse_match": "KV cache 管理与显存优化",
+      "interest_score": 0.7559,
+      "positive_score": null,
+      "negative_score": 0.5173,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 1,
+      "matched_interests": [],
+      "reason": "论文是人群计数模型的腐蚀鲁棒性与量化部署基准，属于计算机视觉应用，与语言模型推理、KV cache 和 RAG 均无关。",
+      "tldr": "构建 CrowdCC 基准，联合评估 23 种腐蚀与 FP32/FP16/INT8 量化对 26 个人群计数模型的影响，发现 INT8 显著改变鲁棒性且不必然提速。",
+      "tags": [
+        "crowd-counting",
+        "quantization",
+        "robustness",
+        "benchmark"
+      ]
+    }
+  ],
+  "stats": {
+    "fetched": 471,
+    "duplicates": 0,
+    "excluded": 0,
+    "candidates": 20,
+    "selected": 5,
+    "failed_batches": 0,
+    "degraded": false,
+    "llm_calls": 4,
+    "prompt_tokens": 8590,
+    "completion_tokens": 7119,
+    "duration_seconds": 112.9,
+    "feedback": {
+      "up": 0,
+      "down": 0,
+      "like": 0,
+      "dislike": 0,
+      "implicit": 0,
+      "positive": 0,
+      "negative": 0,
+      "muted": 0,
+      "synced": 0,
+      "sync_error": null
+    },
+    "zotero": null,
+    "deep_read": 0,
+    "deep_read_notes": []
+  },
+  "issue_number": 2,
+  "issue_url": "https://github.com/stanGSA/Paper-gleaner-demo/issues/2",
+  "comment_ids": {
+    "2610.36355": 6466913111,
+    "2610.35985": 6466913720,
+    "2610.37645": 6466914284,
+    "2610.36794": 6466914802,
+    "2610.36153": 6466915452
+  },
+  "notifications": {},
+  "deep_reads": []
+}
