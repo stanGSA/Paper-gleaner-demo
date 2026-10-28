@@ -33,4 +33,6 @@
 
 [Issue #1](https://github.com/stanGSA/Paper-gleaner-demo/issues/1) 使用人工选取的 5 篇历史论文，复用生产排序与渲染代码，调用真实模型生成推荐理由、概览和深读。基础结果用时 **42.39 秒**，含深读共 **95.28 秒**。本地已有依赖和模型缓存；这是演示素材生成时间，不计作冷启动或新用户上手时间。
 
-模型输出、参数与论文列表见 [demo/](demo/README.md)。三个真实页面截图见 [screenshots/](screenshots/README.md)。人工标注集与 precision@10 评测不在本次任务范围内，Phase 5 仍保留该待办。
+模型输出、参数与论文列表见 [demo/](demo/README.md)。真实页面截图见 [screenshots/](screenshots/README.md)。人工标注集与 precision@10 评测不在本次任务范围内，Phase 5 仍保留该待办。
+
+![同一条配置引导在修复后自动关闭](screenshots/setup-complete.jpg)
