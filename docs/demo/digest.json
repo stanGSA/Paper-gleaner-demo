@@ -1,0 +1,244 @@
+{
+  "day": "2026-10-28",
+  "generated_at": "2026-10-28T10:34:58.948796Z",
+  "overview": "今天推荐的论文主要集中在 LLM 高效服务与长上下文建模、检索增强生成及自反思、以及长上下文信息利用评估几个方向。值得注意的趋势是，研究既关注 KV cache 与流式注意力带来的效率提升，也开始重视 RAG 的自适应检索与自我评判，以及长上下文中的位置偏差问题。建议先读 [1]，它相关度最高，且对 LLM 服务系统的吞吐与显存管理有直接工程价值。",
+  "papers": [
+    {
+      "id": "2309.06180",
+      "title": "Efficient Memory Management for Large Language Model Serving with PagedAttention",
+      "abstract": "High throughput serving of large language models (LLMs) requires batching sufficiently many requests at a time. However, existing systems struggle because the key-value cache (KV cache) memory for each request is huge and grows and shrinks dynamically. When managed inefficiently, this memory can be significantly wasted by fragmentation and redundant duplication, limiting the batch size. To address this problem, we propose PagedAttention, an attention algorithm inspired by the classical virtual memory and paging techniques in operating systems. On top of it, we build vLLM, an LLM serving system that achieves (1) near-zero waste in KV cache memory and (2) flexible sharing of KV cache within and across requests to further reduce memory usage. Our evaluations show that vLLM improves the throughput of popular LLMs by 2-4$\\times$ with the same level of latency compared to the state-of-the-art systems, such as FasterTransformer and Orca. The improvement is more pronounced with longer sequences, larger models, and more complex decoding algorithms. vLLM's source code is publicly available at https://github.com/vllm-project/vllm",
+      "authors": [
+        "Woosuk Kwon",
+        "Zhuohan Li",
+        "Siyuan Zhuang",
+        "Ying Sheng",
+        "Lianmin Zheng",
+        "Cody Hao Yu",
+        "Joseph E. Gonzalez",
+        "Hao Zhang",
+        "Ion Stoica"
+      ],
+      "categories": [
+        "cs.LG",
+        "cs.DC"
+      ],
+      "announce_type": null,
+      "announced": "2023-09-12T12:50:04Z",
+      "coarse_score": 0.3107,
+      "coarse_match": "KV cache 管理与显存优化",
+      "interest_score": 0.8904,
+      "positive_score": null,
+      "negative_score": 0.5797,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 10,
+      "matched_interests": [
+        "KV cache 管理与显存优化",
+        "高效推理与 RAG 的可复现系统实现"
+      ],
+      "reason": "论文针对 LLM 服务中 KV cache 显存碎片与重复冗余问题提出 PagedAttention 与 vLLM 系统，直接命中 KV cache 显存管理与吞吐优化这一核心兴趣，且开源可复现。",
+      "tldr": "受操作系统虚拟内存分页启发提出 PagedAttention，并实现 vLLM 服务系统，使 KV cache 浪费接近零并支持请求内外共享，在相同延迟下吞吐提升 2-4 倍。",
+      "tags": [
+        "kv-cache",
+        "paged-attention",
+        "llm-serving",
+        "throughput"
+      ]
+    },
+    {
+      "id": "2309.17453",
+      "title": "Efficient Streaming Language Models with Attention Sinks",
+      "abstract": "Deploying Large Language Models (LLMs) in streaming applications such as multi-round dialogue, where long interactions are expected, is urgently needed but poses two major challenges. Firstly, during the decoding stage, caching previous tokens' Key and Value states (KV) consumes extensive memory. Secondly, popular LLMs cannot generalize to longer texts than the training sequence length. Window attention, where only the most recent KVs are cached, is a natural approach -- but we show that it fails when the text length surpasses the cache size. We observe an interesting phenomenon, namely attention sink, that keeping the KV of initial tokens will largely recover the performance of window attention. In this paper, we first demonstrate that the emergence of attention sink is due to the strong attention scores towards initial tokens as a \"sink\" even if they are not semantically important. Based on the above analysis, we introduce StreamingLLM, an efficient framework that enables LLMs trained with a finite length attention window to generalize to infinite sequence lengths without any fine-tuning. We show that StreamingLLM can enable Llama-2, MPT, Falcon, and Pythia to perform stable and efficient language modeling with up to 4 million tokens and more. In addition, we discover that adding a placeholder token as a dedicated attention sink during pre-training can further improve streaming deployment. In streaming settings, StreamingLLM outperforms the sliding window recomputation baseline by up to 22.2x speedup. Code and datasets are provided at https://github.com/mit-han-lab/streaming-llm.",
+      "authors": [
+        "Guangxuan Xiao",
+        "Yuandong Tian",
+        "Beidi Chen",
+        "Song Han",
+        "Mike Lewis"
+      ],
+      "categories": [
+        "cs.CL",
+        "cs.AI"
+      ],
+      "announce_type": null,
+      "announced": "2023-09-29T17:59:56Z",
+      "coarse_score": 0.2803,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.8953,
+      "positive_score": null,
+      "negative_score": 0.6151,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 10,
+      "matched_interests": [
+        "KV cache 管理与显存优化",
+        "长上下文与流式推理"
+      ],
+      "reason": "论文聚焦流式解码时 KV cache 显存开销与超训练长度泛化问题，发现 attention sink 现象并据此只保留初始 token 的 KV，同时命中 KV cache 管理与流式推理两个子方向。",
+      "tldr": "提出 StreamingLLM，通过保留少量初始 token 的 KV 作为 attention sink 配合窗口注意力，使 Llama-2 等模型无需微调即可在长达 400 万 token 的流式场景稳定建模。",
+      "tags": [
+        "streaming",
+        "kv-cache",
+        "attention-sink",
+        "long-context"
+      ]
+    },
+    {
+      "id": "2310.11511",
+      "title": "Self-RAG: Learning to Retrieve, Generate, and Critique through Self-Reflection",
+      "abstract": "Despite their remarkable capabilities, large language models (LLMs) often produce responses containing factual inaccuracies due to their sole reliance on the parametric knowledge they encapsulate. Retrieval-Augmented Generation (RAG), an ad hoc approach that augments LMs with retrieval of relevant knowledge, decreases such issues. However, indiscriminately retrieving and incorporating a fixed number of retrieved passages, regardless of whether retrieval is necessary, or passages are relevant, diminishes LM versatility or can lead to unhelpful response generation. We introduce a new framework called Self-Reflective Retrieval-Augmented Generation (Self-RAG) that enhances an LM's quality and factuality through retrieval and self-reflection. Our framework trains a single arbitrary LM that adaptively retrieves passages on-demand, and generates and reflects on retrieved passages and its own generations using special tokens, called reflection tokens. Generating reflection tokens makes the LM controllable during the inference phase, enabling it to tailor its behavior to diverse task requirements. Experiments show that Self-RAG (7B and 13B parameters) significantly outperforms state-of-the-art LLMs and retrieval-augmented models on a diverse set of tasks. Specifically, Self-RAG outperforms ChatGPT and retrieval-augmented Llama2-chat on Open-domain QA, reasoning and fact verification tasks, and it shows significant gains in improving factuality and citation accuracy for long-form generations relative to these models.",
+      "authors": [
+        "Akari Asai",
+        "Zeqiu Wu",
+        "Yizhong Wang",
+        "Avirup Sil",
+        "Hannaneh Hajishirzi"
+      ],
+      "categories": [
+        "cs.CL",
+        "cs.AI",
+        "cs.LG"
+      ],
+      "announce_type": null,
+      "announced": "2023-10-17T18:18:32Z",
+      "coarse_score": 0.2437,
+      "coarse_match": "高效推理与 RAG 的可复现系统实现",
+      "interest_score": 0.8523,
+      "positive_score": null,
+      "negative_score": 0.6086,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 10,
+      "matched_interests": [
+        "自适应检索与检索必要性判断",
+        "RAG 事实性与无依据回答减少"
+      ],
+      "reason": "论文明确针对「无论是否需要都固定检索若干段落」的弊端，用反思 token 让模型按需自适应检索并自我评判生成内容，正好命中检索必要性判断与减少无依据回答两个核心兴趣。",
+      "tldr": "提出 Self-RAG，训练模型用反思 token 自适应决定是否检索并评判检索段落与自身生成，7B/13B 模型在开放域问答、推理与事实核查上超过 ChatGPT 与检索增强的 Llama2-chat，长文生成的事实性与引用准确性也明显提升。",
+      "tags": [
+        "self-rag",
+        "adaptive-retrieval",
+        "factuality",
+        "self-reflection"
+      ]
+    },
+    {
+      "id": "2005.11401",
+      "title": "Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks",
+      "abstract": "Large pre-trained language models have been shown to store factual knowledge in their parameters, and achieve state-of-the-art results when fine-tuned on downstream NLP tasks. However, their ability to access and precisely manipulate knowledge is still limited, and hence on knowledge-intensive tasks, their performance lags behind task-specific architectures. Additionally, providing provenance for their decisions and updating their world knowledge remain open research problems. Pre-trained models with a differentiable access mechanism to explicit non-parametric memory can overcome this issue, but have so far been only investigated for extractive downstream tasks. We explore a general-purpose fine-tuning recipe for retrieval-augmented generation (RAG) -- models which combine pre-trained parametric and non-parametric memory for language generation. We introduce RAG models where the parametric memory is a pre-trained seq2seq model and the non-parametric memory is a dense vector index of Wikipedia, accessed with a pre-trained neural retriever. We compare two RAG formulations, one which conditions on the same retrieved passages across the whole generated sequence, the other can use different passages per token. We fine-tune and evaluate our models on a wide range of knowledge-intensive NLP tasks and set the state-of-the-art on three open domain QA tasks, outperforming parametric seq2seq models and task-specific retrieve-and-extract architectures. For language generation tasks, we find that RAG models generate more specific, diverse and factual language than a state-of-the-art parametric-only seq2seq baseline.",
+      "authors": [
+        "Patrick Lewis",
+        "Ethan Perez",
+        "Aleksandra Piktus",
+        "Fabio Petroni",
+        "Vladimir Karpukhin",
+        "Naman Goyal",
+        "Heinrich Küttler",
+        "Mike Lewis",
+        "Wen-tau Yih",
+        "Tim Rocktäschel",
+        "Sebastian Riedel",
+        "Douwe Kiela"
+      ],
+      "categories": [
+        "cs.CL",
+        "cs.LG"
+      ],
+      "announce_type": null,
+      "announced": "2020-05-22T21:34:34Z",
+      "coarse_score": 0.2528,
+      "coarse_match": "高效推理与 RAG 的可复现系统实现",
+      "interest_score": 0.8774,
+      "positive_score": null,
+      "negative_score": 0.6246,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 8,
+      "matched_interests": [
+        "RAG 事实性与无依据回答减少",
+        "高效推理与 RAG 的可复现系统实现"
+      ],
+      "reason": "这是 RAG 的开创性工作，用可微检索器接入稠密向量索引以提供可溯源的外部知识，是 RAG 事实性与系统实现方向的基础参考；但它固定检索、不涉及检索必要性判断或推理效率优化。",
+      "tldr": "提出 RAG 模型，将预训练 seq2seq 参数记忆与 Wikipedia 稠密向量索引的非参数记忆结合，在三个开放域问答任务上取得当时最优并提升生成的事实性与多样性。",
+      "tags": [
+        "rag",
+        "dense-retrieval",
+        "knowledge-intensive",
+        "factuality"
+      ]
+    },
+    {
+      "id": "2307.03172",
+      "title": "Lost in the Middle: How Language Models Use Long Contexts",
+      "abstract": "While recent language models have the ability to take long contexts as input, relatively little is known about how well they use longer context. We analyze the performance of language models on two tasks that require identifying relevant information in their input contexts: multi-document question answering and key-value retrieval. We find that performance can degrade significantly when changing the position of relevant information, indicating that current language models do not robustly make use of information in long input contexts. In particular, we observe that performance is often highest when relevant information occurs at the beginning or end of the input context, and significantly degrades when models must access relevant information in the middle of long contexts, even for explicitly long-context models. Our analysis provides a better understanding of how language models use their input context and provides new evaluation protocols for future long-context language models.",
+      "authors": [
+        "Nelson F. Liu",
+        "Kevin Lin",
+        "John Hewitt",
+        "Ashwin Paranjape",
+        "Michele Bevilacqua",
+        "Fabio Petroni",
+        "Percy Liang"
+      ],
+      "categories": [
+        "cs.CL"
+      ],
+      "announce_type": null,
+      "announced": "2023-07-06T17:54:11Z",
+      "coarse_score": 0.2569,
+      "coarse_match": "长上下文与流式推理",
+      "interest_score": 0.8538,
+      "positive_score": null,
+      "negative_score": 0.597,
+      "zotero_score": null,
+      "forced": false,
+      "llm_score": 7,
+      "matched_interests": [
+        "长上下文与流式推理",
+        "检索结果重排与上下文压缩"
+      ],
+      "reason": "论文系统分析长上下文中相关信息位置对模型表现的影响（中间位置显著掉点），对长上下文使用能力与检索片段在上下文中的摆放、压缩策略有直接指导意义，但不涉及 KV cache 或系统实现。",
+      "tldr": "通过多文档问答与键值检索任务评测发现，相关信息位于长上下文中部时模型性能显著下降，即使是对长上下文优化的模型也存在该位置偏差。",
+      "tags": [
+        "long-context",
+        "position-bias",
+        "evaluation",
+        "retrieval"
+      ]
+    }
+  ],
+  "others": [],
+  "stats": {
+    "fetched": 5,
+    "duplicates": 0,
+    "excluded": 0,
+    "candidates": 5,
+    "selected": 5,
+    "failed_batches": 0,
+    "degraded": false,
+    "llm_calls": 3,
+    "prompt_tokens": 3156,
+    "completion_tokens": 3031,
+    "duration_seconds": 38.4,
+    "feedback": {
+      "up": 0,
+      "down": 0,
+      "like": 0,
+      "dislike": 0,
+      "implicit": 0,
+      "positive": 0,
+      "negative": 0,
+      "muted": 0,
+      "synced": 0,
+      "sync_error": null
+    },
+    "zotero": null,
+    "deep_read": 0,
+    "deep_read_notes": []
+  },
+  "issue_number": null,
+  "issue_url": null,
+  "comment_ids": {},
+  "notifications": {},
+  "deep_reads": []
+}

@@ -1,0 +1,44 @@
+{
+  "generated_at": "2026-10-28T10:36:30.254831+00:00",
+  "paper_ids": [
+    "2307.03172",
+    "2309.06180",
+    "2309.17453",
+    "2310.11511",
+    "2005.11401"
+  ],
+  "profile": "docs/demo/interests.md",
+  "historical_sample": true,
+  "ranking_seconds": 42.39,
+  "total_seconds": 95.28,
+  "fast_model": "deepseek-v4.1-flash-1017",
+  "deep_model": "deepseek-v4.1-flash-1017",
+  "stats": {
+    "fetched": 5,
+    "duplicates": 0,
+    "excluded": 0,
+    "candidates": 5,
+    "selected": 5,
+    "failed_batches": 0,
+    "degraded": false,
+    "llm_calls": 3,
+    "prompt_tokens": 3156,
+    "completion_tokens": 3031,
+    "duration_seconds": 38.4,
+    "feedback": {
+      "up": 0,
+      "down": 0,
+      "like": 0,
+      "dislike": 0,
+      "implicit": 0,
+      "positive": 0,
+      "negative": 0,
+      "muted": 0,
+      "synced": 0,
+      "sync_error": null
+    },
+    "zotero": null,
+    "deep_read": 0,
+    "deep_read_notes": []
+  }
+}

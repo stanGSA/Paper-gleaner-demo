@@ -1,0 +1,131 @@
+{
+  "day": "2026-10-25",
+  "generated_at": "2026-10-24T20:04:24.385157Z",
+  "overview": "今天的推荐主要集中在域泛化与鲁棒视觉学习、图像风格迁移，以及参数高效适配，整体更关注跨场景可靠性、内容与风格的平衡，以及有限资源下的性能提升。值得注意的是，评估可信度也成为重点：[1]强调指标对齐的模型选择，[5]则通过受控实验审视方法的实际机制与收益，提醒读者谨慎看待性能提升主张。建议先读相关度最高的[1]，了解工业缺陷检测中训练、校准与模型选择的协同设计，再结合[5]审视域泛化方法的证据强度。",
+  "papers": [
+    {
+      "id": "2610.19540",
+      "title": "Cross-Scenario Industrial Defect Detection via Domain-Robust Training and Metric-Aligned Selection",
+      "abstract": "Automated defect detection of industrial boards must remain highly reliable under cross-scenario variations in lighting, surface contaminants, and production line conditions. This makes cross-scenario defect detection a domain generalization problem, wherein models are required to detect, localize, ",
+      "authors": [
+        "Dikai Li",
+        "Weijia Wang",
+        "Yuan-Gen Wang"
+      ],
+      "categories": [
+        "cs.CV"
+      ],
+      "announce_type": null,
+      "announced": "2026-10-14T03:57:52Z",
+      "coarse_score": 0.8093,
+      "coarse_match": "跨域检测的泛化机制与失效分析",
+      "forced": false,
+      "llm_score": 8,
+      "matched_interests": [
+        "目标检测器的单源域泛化",
+        "风格增强与域随机化",
+        "跨域检测的泛化机制与失效分析"
+      ],
+      "reason": "直接研究未知场景中的缺陷定位与分类，采用统计扰动、渐进随机卷积和小缺陷感知学习，贴近检测域泛化与小目标鲁棒性需求。提供单张RTX 4090上的实验和开源代码，但摘要未明确单源域设定，也未展示机制消融或失败案例。",
+      "tldr": "该方法结合域鲁棒训练、小缺陷学习、分数校准和指标对齐模型选择，在工业缺陷检测挑战测试集上取得0.564的Track 1分数。",
+      "tags": [
+        "cross-domain-detection",
+        "domain-randomization",
+        "small-defects",
+        "open-source"
+      ]
+    },
+    {
+      "id": "2610.04922",
+      "title": "TRACE: Time-Adaptive Residual Attention Control with Content-Style Decomposition for Training-Free Diffusion Style Transfer",
+      "abstract": "Reference-guided style transfer aims to preserve the semantic structure of a content image while transferring the visual appearance of a style reference. Recent diffusion-based methods achieve impressive stylization quality by exploiting strong pretrained generative priors. However, training-free ap",
+      "authors": [
+        "Duc Khoan Le",
+        "Kim Ngoc Tran",
+        "Minh Nhat Le",
+        "Thanh An Tran",
+        "Viet Toan Nguyen",
+        "Khanh An Lay",
+        "Tran Thai Son",
+        "Hoang Pham Minh"
+      ],
+      "categories": [
+        "cs.CV"
+      ],
+      "announce_type": null,
+      "announced": "2026-10-04T04:06:30Z",
+      "coarse_score": 0.8189,
+      "coarse_match": "风格迁移与图像转换驱动的检测泛化",
+      "forced": false,
+      "llm_score": 7,
+      "matched_interests": [
+        "风格迁移与图像转换驱动的检测泛化",
+        "保持语义、边界框与小目标细节的外观变换"
+      ],
+      "reason": "通过内容—风格子空间分解减少参考图语义泄漏，并动态控制风格注入，直接涉及风格增强中保留原图语义结构的关键问题。但摘要未验证边界框、小目标保持或跨域检测收益。",
+      "tldr": "TRACE利用内容—风格分解和时间自适应残差注意力实现免训练扩散风格迁移，在风格保真度与内容保持之间取得更好的平衡。",
+      "tags": [
+        "style-transfer",
+        "content-preservation",
+        "diffusion"
+      ]
+    }
+  ],
+  "others": [
+    {
+      "id": "2610.05066",
+      "title": "Salvation Lies Within: Eliciting Inherent Style Transfer in Step-Distilled Diffusion Models",
+      "abstract": "Adapting step-distilled text-to-image (T2I) models through post-training incurs additional computational costs and affects native few-step generation behavior. This motivates a complementary route beyond style-specific adaptation: drawing on the visual knowledge already encoded in step-distilled T2I",
+      "authors": [
+        "Shengyin Sun",
+        "Yiming Li",
+        "Yingzhao Lian",
+        "Xing Li",
+        "Xingzhi Zhou",
+        "Anxin Tian",
+        "Zhili Wang",
+        "Haoyang Li",
+        "Ziqiang Cui",
+        "Chen Ma"
+      ],
+      "categories": [
+        "cs.CV"
+      ],
+      "announce_type": null,
+      "announced": "2026-10-04T09:06:57Z",
+      "coarse_score": 0.8125,
+      "coarse_match": "风格迁移与图像转换驱动的检测泛化",
+      "forced": false,
+      "llm_score": 5,
+      "matched_interests": [
+        "风格增强与域随机化"
+      ],
+      "reason": "将参考风格转为可跨内容复用的文本渲染指令，可为低训练成本的风格数据生成提供方法参考。但它生成新图像，而非对带框源图进行结构保持的变换，也未开展检测泛化实验。",
+      "tldr": "StyleForge自动将参考图风格编译为文本指导，使冻结的少步扩散模型复用该风格，生成质量评分相对最强基线最高提升29.47%，并提供代码。",
+      "tags": [
+        "style-generation",
+        "training-free",
+        "few-step-diffusion"
+      ]
+    }
+  ],
+  "stats": {
+    "fetched": 20,
+    "duplicates": 0,
+    "excluded": 0,
+    "candidates": 20,
+    "selected": 2,
+    "failed_batches": 0,
+    "degraded": false,
+    "llm_calls": 4,
+    "prompt_tokens": 12363,
+    "completion_tokens": 4558,
+    "duration_seconds": 97.4
+  },
+  "issue_number": 1,
+  "issue_url": "https://github.com/stanGSA/Paper-gleaner/issues/1",
+  "comment_ids": {
+    "2610.19540": 6388934280,
+    "2610.04922": 6388934591
+  }
+}

@@ -1,0 +1,54 @@
+name: Interact
+
+# 在日报 Issue 下评论 /deep、/compare、/more、/like、/dislike、/mute、/unmute、/ask、/help 时触发。
+# /ask 让 deep 档模型调用只读工具（查日报、读全文、检索 arXiv 和历史），最多 8 步，只读当前 Issue 的评论作为上下文。
+# issue_comment 事件总是使用默认分支上的这个文件。
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write # 提交 gleaner-data 分支（报告缓存、反馈、屏蔽主题）
+  issues: write # 回复评论、添加表情
+
+# 不设置 concurrency 分组：同一分组只保留一个排队中的任务，连续发几条指令时中间的会被取消。
+# 交互任务写入的数据靠 rebase 重试和 jsonl 的 merge=union 处理并发。
+
+jobs:
+  handle:
+    # 只响应日报 Issue（gleaner 标签）下、仓库所有者和协作者发出的指令；
+    # 公开仓库任何人都能评论，不加限制会被别人消耗 API 额度。用 GITHUB_TOKEN 发出的回复不会再次触发。
+    if: >-
+      !github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/') &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
+      contains(github.event.issue.labels.*.name, 'gleaner')
+    runs-on: ubuntu-latest
+    # /deep、/compare 一般一两分钟；/ask 的循环超过 10 分钟就停止调用工具并作答，
+    # 但单次 deep 档调用最长 180 秒、SDK 还会重试，留足余量
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --no-dev
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # 评论内容只由 gleaner 从事件文件（GITHUB_EVENT_PATH）读取，不拼进脚本，避免脚本注入
+      - name: Handle command
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_FAST_MODEL: ${{ vars.LLM_FAST_MODEL }}
+          LLM_DEEP_MODEL: ${{ vars.LLM_DEEP_MODEL }}
+          S2_API_KEY: ${{ secrets.S2_API_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: uv run --no-sync gleaner handle-comment

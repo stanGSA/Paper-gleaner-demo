@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# 环境与工具
+# gleaner-data 分支的本地 worktree
+.gleaner-data/
+.venv/
+.env
+# 上游只提供示例；在自己的 Fork 中可用 git add -f 提交这两个个性化文件。
+/config.yaml
+/profile/interests.md
+.pytest_cache/
+.ruff_cache/
+
+# 编辑器
+.idea/
+.vscode/
+.DS_Store

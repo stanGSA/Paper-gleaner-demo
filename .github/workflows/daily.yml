@@ -1,0 +1,116 @@
+name: Daily digest
+
+on:
+  workflow_dispatch:
+    inputs:
+      quickstart:
+        description: "首次运行：跳过自动深读、Zotero 和额外通知，先生成基础日报"
+        type: boolean
+        default: true
+      dry_run:
+        description: "只运行不发布（不创建 Issue、不推送、不提交数据分支；周末没有新公告时改用最近 20 篇论文）"
+        type: boolean
+        default: false
+      force:
+        description: "当天日报已存在时仍重新生成"
+        type: boolean
+        default: false
+      notify_test:
+        description: "只给已启用的推送渠道（邮件、飞书、企业微信）各发一条测试消息，不运行日报"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write # 提交 gleaner-data 分支
+  issues: write # 创建日报 Issue 和评论
+
+concurrency:
+  group: gleaner-daily
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    # 平时 3–5 分钟；自动深读（deep 档模型，单次超时 180 秒，失败会重试）和 Zotero 拉取可能再加十几分钟
+    timeout-minutes: 45
+    env:
+      # 只是「有没有配置 Zotero」的布尔值，不含密钥本身；决定是否恢复、保存 Zotero 缓存
+      ZOTERO_CONFIGURED: ${{ secrets.ZOTERO_KEY != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Cache embedding model
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/paper-gleaner/models
+          key: gleaner-models-${{ hashFiles('config.yaml', 'config.example.yaml') }}
+          restore-keys: gleaner-models-
+
+      # Zotero 文库只缓存在这里，不写进 gleaner-data（公开分支谁都能看）。缓存命中后不会自动更新，
+      # 所以每次运行另存一份新的（key 带 run_id），恢复时取最近的一份；文库没变时 Zotero 返回 304 直接用它
+      - name: Restore Zotero cache
+        if: env.ZOTERO_CONFIGURED == 'true' && inputs.notify_test != true
+        uses: actions/cache/restore@v4
+        with:
+          path: ~/.cache/paper-gleaner/zotero
+          key: gleaner-zotero-${{ github.run_id }}
+          restore-keys: gleaner-zotero-
+
+      - name: Install dependencies
+        run: uv sync --locked --no-dev
+
+      - name: Configure git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Run daily pipeline
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          EMBEDDING_API_KEY: ${{ secrets.EMBEDDING_API_KEY }}
+          LLM_FAST_MODEL: ${{ vars.LLM_FAST_MODEL }}
+          LLM_DEEP_MODEL: ${{ vars.LLM_DEEP_MODEL }}
+          # 推送渠道：没有启用的渠道不会读取这些变量
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          FEISHU_WEBHOOK: ${{ secrets.FEISHU_WEBHOOK }}
+          FEISHU_SECRET: ${{ secrets.FEISHU_SECRET }}
+          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+          ZOTERO_ID: ${{ secrets.ZOTERO_ID }}
+          ZOTERO_KEY: ${{ secrets.ZOTERO_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          FORCE: ${{ inputs.force }}
+          NOTIFY_TEST: ${{ inputs.notify_test }}
+          QUICKSTART: ${{ inputs.quickstart }}
+        run: |
+          if [ "$NOTIFY_TEST" = "true" ]; then
+            uv run --no-sync gleaner notify-test
+            exit
+          fi
+          args=()
+          setup_args=(--github)
+          if [ "$QUICKSTART" = "true" ]; then
+            args+=(--quickstart)
+            setup_args+=(--quickstart)
+          fi
+          if [ "$DRY_RUN" = "true" ]; then setup_args+=(--dry-run); fi
+          uv run --no-sync gleaner setup "${setup_args[@]}"
+          if [ "$DRY_RUN" = "true" ]; then args+=(--dry-run); fi
+          if [ "$FORCE" = "true" ]; then args+=(--force); fi
+          uv run --no-sync gleaner daily "${args[@]}"
+
+      - name: Save Zotero cache
+        if: always() && env.ZOTERO_CONFIGURED == 'true' && inputs.notify_test != true
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/paper-gleaner/zotero
+          key: gleaner-zotero-${{ github.run_id }}

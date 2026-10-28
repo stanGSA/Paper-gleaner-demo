@@ -1,0 +1,14 @@
+# 公开演示配置；只使用 docs/demo/interests.md，不读取个人研究方向。
+language: zh
+timezone: Asia/Shanghai
+profile:
+  interests_file: docs/demo/interests.md
+ranking:
+  coarse_top_k: 20
+  final_top_n: 5
+  min_score: 6
+deep_read:
+  auto_top_m: 0
+notify:
+  github_issue:
+    close_after_days: null

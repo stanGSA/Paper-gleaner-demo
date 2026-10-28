@@ -1,0 +1,70 @@
+# Paper Gleaner 配置示例
+# 使用方法：复制为 config.yaml 后按需修改。密钥（API Key 等）不要写在这里，请配置为 GitHub Secrets。
+
+language: zh                       # 输出语言
+timezone: Asia/Shanghai
+
+sources:
+  arxiv:
+    categories: [cs.CL, cs.LG, cs.AI]
+    include_cross_list: true       # 是否包含从其它分类交叉投递过来的论文
+    include_replace: false         # 是否包含旧论文的新版本
+
+profile:
+  interests_file: profile/interests.md
+  zotero:                          # 可选：把 Zotero 文库作为兴趣锚点（文库内容只缓存在 Actions 缓存里）
+    enabled: false                 # 启用时需要 Secrets ZOTERO_ID / ZOTERO_KEY
+    library_type: user             # user（个人文库，ZOTERO_ID 填用户 ID）| group（群组文库，填群组 ID）
+    collections: []                # 限定范围的 collection，写名称或 key；为空时使用整个文库
+    include_subcollections: true   # 是否包含子 collection
+    max_items: 200                 # 最多取多少篇：按加入时间从新到旧，在各 collection 之间轮流取
+
+filters:
+  include_keywords: []             # 命中即进入精排
+  exclude_keywords: []             # 命中即排除
+
+ranking:
+  coarse_top_k: 50                 # 向量粗筛保留的篇数
+  final_top_n: 10                  # 最终推送的最多篇数
+  min_score: 6                     # LLM 打分（0–10）低于此值不推送
+  weights: {interest: 1.0, positive: 0.6, zotero: 0.5, negative: 0.8}
+  feedback_half_life_days: 90      # 反馈的时间衰减半衰期
+  embedding:
+    provider: local                # local（fastembed 本地推理）| api（OpenAI 兼容 embeddings 接口）
+    model: BAAI/bge-small-en-v1.5
+    # base_url: https://dashscope.aliyuncs.com/compatible-mode/v1   # provider 为 api 时使用，默认沿用 LLM 的
+
+deep_read:
+  auto_top_m: 1                    # 日报中自动深读的篇数，0 表示关闭
+  max_input_tokens: 30000          # /deep、/compare 单条指令的输入上限（按字符数估算）
+  timeout_seconds: 180             # 深读、对比、/ask 单次 LLM 调用的超时（秒）
+
+ask:                               # /ask：deep 档模型自己决定调用哪些只读工具
+  max_steps: 8                     # 最多调用几步
+  max_tokens: 60000                # 单条 /ask 的 token 上限（各步输入加输出），接近时停止调用工具并作答
+
+llm:
+  base_url: https://api.deepseek.com   # 也可以用环境变量 LLM_BASE_URL 覆盖
+  models:                          # 模型名以服务商当前提供的为准
+    fast: deepseek-chat            # 兴趣拆解、精排、偏好总结
+    deep: deepseek-reasoner        # 深读、对比、/ask
+  daily_token_budget: 500000       # 超出后自动降级
+  timeout_seconds: 60
+  max_retries: 3
+
+notify:
+  github_issue:
+    enabled: true
+    per_paper_comment: true        # 每篇论文一条评论，便于逐篇反馈
+    close_after_days: 7            # 自动关闭旧日报（关闭后仍可评论交互）
+  # 下面三个渠道只发摘要和日报 Issue 的链接，交互仍在 Issue 中进行。
+  # 地址、密码等密钥只能配置为 GitHub Secrets，写在这里会报错；配置好后运行 gleaner notify-test 验证
+  email:                           # 需要 SMTP_HOST、SMTP_USER、SMTP_PASSWORD、EMAIL_TO，可选 SMTP_PORT（默认 465）
+    enabled: false
+    subject_prefix: "📚 Paper Gleaner"
+  feishu:                          # 需要 FEISHU_WEBHOOK，建议开启签名校验并配置 FEISHU_SECRET
+    enabled: false
+    max_papers: 10                 # 卡片中最多列出的篇数
+  wecom:                           # 需要 WECOM_WEBHOOK
+    enabled: false
+    max_papers: 5                  # 消息最多 4096 字节，只发前几篇和链接

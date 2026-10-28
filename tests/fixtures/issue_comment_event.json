@@ -1,0 +1,37 @@
+{
+  "action": "created",
+  "issue": {
+    "url": "https://api.github.com/repos/o/r/issues/1",
+    "html_url": "https://github.com/o/r/issues/1",
+    "number": 1,
+    "title": "📚 Paper Gleaner · 2026-10-25 · 2 篇",
+    "user": {"login": "github-actions[bot]", "type": "Bot"},
+    "labels": [
+      {"id": 1, "name": "gleaner", "color": "1f6feb"},
+      {"id": 2, "name": "daily", "color": "0e8a16"}
+    ],
+    "state": "open",
+    "comments": 2,
+    "author_association": "NONE",
+    "body": "> 今天以长上下文推理为主。\n\n| # | 论文 | 分数 | 匹配兴趣 |\n| --: | --- | :-: | --- |\n\n<!-- gleaner:digest day=2026-10-25 -->\n"
+  },
+  "comment": {
+    "url": "https://api.github.com/repos/o/r/issues/comments/9001",
+    "html_url": "https://github.com/o/r/issues/1#issuecomment-9001",
+    "issue_url": "https://api.github.com/repos/o/r/issues/1",
+    "id": 9001,
+    "user": {"login": "owner", "type": "User"},
+    "created_at": "2026-10-26T02:00:00Z",
+    "updated_at": "2026-10-26T02:00:00Z",
+    "author_association": "OWNER",
+    "body": "/deep 1"
+  },
+  "repository": {
+    "id": 42,
+    "name": "r",
+    "full_name": "o/r",
+    "private": false,
+    "default_branch": "main"
+  },
+  "sender": {"login": "owner", "type": "User"}
+}

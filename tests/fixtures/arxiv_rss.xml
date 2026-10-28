@@ -1,0 +1,84 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- 按 rss.arxiv.org 的格式手写的测试数据，论文内容均为虚构 -->
+<rss xmlns:arxiv="http://arxiv.org/schemas/atom" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/" version="2.0">
+  <channel>
+    <title>cs.CL+cs.LG updates on arXiv.org</title>
+    <link>http://rss.arxiv.org/rss/cs.CL+cs.LG</link>
+    <description>cs.CL+cs.LG updates on the arXiv.org e-print archive.</description>
+    <atom:link href="https://rss.arxiv.org/rss/cs.CL+cs.LG" rel="self" type="application/rss+xml"/>
+    <docs>http://www.rssboard.org/rss-specification</docs>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 22 Oct 2026 00:00:00 -0400</lastBuildDate>
+    <managingEditor>rss-help@arxiv.org</managingEditor>
+    <pubDate>Thu, 22 Oct 2026 00:00:00 -0400</pubDate>
+    <skipDays>
+      <day>Saturday</day>
+      <day>Sunday</day>
+    </skipDays>
+    <item>
+      <title>LongKV: Hierarchical KV Cache
+  Compression for Million-Token Inference</title>
+      <link>https://arxiv.org/abs/2610.00001</link>
+      <description>arXiv:2610.00001v1 Announce Type: new
+Abstract: We propose a hierarchical KV cache compression scheme
+that keeps perplexity nearly unchanged.</description>
+      <guid isPermaLink="false">oai:arXiv.org:2610.00001v1</guid>
+      <category>cs.CL</category>
+      <category>cs.LG</category>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 -0400</pubDate>
+      <arxiv:announce_type>new</arxiv:announce_type>
+      <dc:rights>http://creativecommons.org/licenses/by/4.0/</dc:rights>
+      <dc:creator>Alice Zhang, Bob Li, Carol Wang, David Chen</dc:creator>
+    </item>
+    <item>
+      <title>Retrieval-Augmented Question Answering over Scientific Papers</title>
+      <link>https://arxiv.org/abs/2610.00002</link>
+      <description>arXiv:2610.00002v1 Announce Type: new
+Abstract: A RAG benchmark for scientific literature.</description>
+      <guid isPermaLink="false">oai:arXiv.org:2610.00002v1</guid>
+      <category>cs.CL</category>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 -0400</pubDate>
+      <arxiv:announce_type>new</arxiv:announce_type>
+      <dc:rights>http://arxiv.org/licenses/nonexclusive-distrib/1.0/</dc:rights>
+      <dc:creator>Erin Liu</dc:creator>
+    </item>
+    <item>
+      <title>Efficient Attention Kernels on Commodity GPUs</title>
+      <link>https://arxiv.org/abs/2610.00003</link>
+      <description>arXiv:2610.00003v1 Announce Type: cross
+Abstract: Fast attention kernels for consumer hardware.</description>
+      <guid isPermaLink="false">oai:arXiv.org:2610.00003v1</guid>
+      <category>cs.DC</category>
+      <category>cs.LG</category>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 -0400</pubDate>
+      <arxiv:announce_type>cross</arxiv:announce_type>
+      <dc:rights>http://creativecommons.org/licenses/by/4.0/</dc:rights>
+      <dc:creator>Frank Zhou, Grace Sun</dc:creator>
+    </item>
+    <item>
+      <title>An Older Paper, Revised</title>
+      <link>https://arxiv.org/abs/2509.12345</link>
+      <description>arXiv:2509.12345v3 Announce Type: replace
+Abstract: A revised version of an older paper.</description>
+      <guid isPermaLink="false">oai:arXiv.org:2509.12345v3</guid>
+      <category>cs.CL</category>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 -0400</pubDate>
+      <arxiv:announce_type>replace</arxiv:announce_type>
+      <dc:rights>http://creativecommons.org/licenses/by/4.0/</dc:rights>
+      <dc:creator>Henry Wu</dc:creator>
+    </item>
+    <item>
+      <title>A Cross-Listed Paper, Revised</title>
+      <link>https://arxiv.org/abs/2508.54321</link>
+      <description>arXiv:2508.54321v2 Announce Type: replace-cross
+Abstract: A revised cross-listed paper.</description>
+      <guid isPermaLink="false">oai:arXiv.org:2508.54321v2</guid>
+      <category>stat.ML</category>
+      <category>cs.LG</category>
+      <pubDate>Thu, 22 Oct 2026 00:00:00 -0400</pubDate>
+      <arxiv:announce_type>replace-cross</arxiv:announce_type>
+      <dc:rights>http://creativecommons.org/licenses/by/4.0/</dc:rights>
+      <dc:creator>Ivy Huang</dc:creator>
+    </item>
+  </channel>
+</rss>
